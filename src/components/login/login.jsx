@@ -1,7 +1,9 @@
-import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from 'axios';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import {useCookies} from 'react-cookie';
 import TextField from '@mui/material/TextField';
 import { Button, Stack } from "@mui/material";
 
@@ -20,7 +22,11 @@ const validationSchema = yup.object({
     .required('Password is Required'),
 });
 
-export const Login = () => {
+export const Login = ({setData}) => {
+  const [_, setCookies] = useCookies(['access_token']);
+
+  const navigate = useNavigate();
+
   const formik = useFormik(
     {
     initialValues: {
@@ -31,17 +37,24 @@ export const Login = () => {
       onSubmit: (values) => {
         const postData = async () => {
           try {
-            const response = await fetch('http://localhost:3001/auth/login', {
-              method: 'POST',
+            const response = await axios.post('http://localhost:3001/auth/login', JSON.stringify(values, null, 2), {
               headers: {
                 'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(values, null, 2),
-            });
+              },            
+          });
       
-            if (response.ok) {
-              alert('Post request successful')
+            if (response.status === 200) {
+              alert('Post request successful');
+              setCookies('access_token', response.data.token);
+              window.localStorage.setItem('userID', response.data.userID);
               formik.resetForm();
+              setData({
+                userName: response.data.userName,
+                userSurname: response.data.userSurname,
+                userEmail: response.data.userEmail,
+                userPhone: response.data.userPhone
+              })
+              navigate('/');
               console.log('Post request successful');
               
             } else {
@@ -50,6 +63,7 @@ export const Login = () => {
             }
           } catch (error) {
             // Handle network or other errors
+            alert(error)
             console.log('Error:', error);
           }
         };

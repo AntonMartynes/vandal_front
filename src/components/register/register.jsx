@@ -1,6 +1,8 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from 'formik';
+import {useCookies} from 'react-cookie';
+import axios from 'axios';
 import * as yup from 'yup';
 import TextField from '@mui/material/TextField';
 import { Button, Stack } from "@mui/material";
@@ -8,24 +10,38 @@ import { Button, Stack } from "@mui/material";
 import './register.scss';
 
 const validationSchema = yup.object({
-  userEmail: yup
-    .string('Enter the name of the mark')
-    .min(3, 'Name should be of minimum 3 characters length')
+  userName: yup
+    .string('Enter Your Name')
     .required('Name is required'),
-  description: yup
-    .string('Enter description of the mark')
-    .min(3, 'Description should be of minimum 3 characters length')
+
+  userSurname: yup
+    .string('Enter Your Surname')
     .required('Description is required'),
-  latitude: yup
-    .number('Enter latitude')
-    .required('latitude is required'),
-  longitude: yup
-    .number('Enter longitude')
-    .required('longitude is required'),
+
+  userPhone: yup
+    .string('Enter Your Phone')
+    .required('Phone number is required'),
+
+    userEmail: yup
+    .string('Enter Your Email')
+    .email()
+    .required('Email is required'),
+
+    userPassword: yup
+    .string('Enter Your Password')
+    .required('Password is required'),
+
+    userConfirmedPassword: yup
+    .string('Confirm Your Password')
+    .required('Confirmation is required'),
 
 });
 
-export const Register = () => {
+
+export const Register = ({setData}) => {
+  const navigate = useNavigate();
+  const [_, setCookies] = useCookies(['access_token']);
+
   const formik = useFormik(
     {
     initialValues: {
@@ -40,17 +56,26 @@ export const Register = () => {
       onSubmit: (values) => {
         const postData = async () => {
           try {
-            const response = await fetch('http://localhost:3001/auth/register', {
-              method: 'POST',
+            const response = await axios.post('http://localhost:3001/auth/register', JSON.stringify(values, null, 2), {        
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify(values, null, 2),
             });
       
-            if (response.ok) {
+            if (response.status === 200) {
               // Handle successful response
+              setCookies('access_token', response.data.token);
+              window.localStorage.setItem('userID', response.data.userID);
+              alert('Post request successful');
+              setData({
+                userName: response.data.userName,
+                userSurname: response.data.userSurname,
+                userEmail: response.data.userEmail,
+                userPhone: response.data.userPhone
+              })
+              formik.resetForm();
               console.log('Post request successful');
+              navigate("/")
 
             } else {
               // Handle error response
@@ -140,10 +165,10 @@ export const Register = () => {
             type="password"
             margin="dense"
             sx={{width: '30vw'}}
-            value={formik.values.name}
+            value={formik.values.userPassword}
             onChange={formik.handleChange}
-            error={formik.touched.name && Boolean(formik.errors.name)}
-            helperText={formik.touched.name && formik.errors.name}
+            error={formik.touched.userPassword && Boolean(formik.errors.userPassword)}
+            helperText={formik.touched.userPassword && formik.errors.userPassword}
           />
 
           <TextField
@@ -154,15 +179,15 @@ export const Register = () => {
             type="password"
             margin="dense"
             sx={{width: '30vw'}}
-            value={formik.values.name}
+            value={formik.values.userConfirmedPassword}
             onChange={formik.handleChange}
-            error={formik.touched.name && Boolean(formik.errors.name)}
-            helperText={formik.touched.name && formik.errors.name}
+            error={formik.touched.userConfirmedPassword && Boolean(formik.errors.userConfirmedPassword)}
+            helperText={formik.touched.userConfirmedPassword && formik.errors.userConfirmedPassword}
           />
 
           <Button 
-            color="primary" 
             variant="contained" 
+            fullWidth 
             type="submit"
             sx={{ my: 1.5, width: '30vw' }}
           >
@@ -172,7 +197,7 @@ export const Register = () => {
       </form>
 
       <div className="registerForm__redirect">
-        <span>Ще не зареєстровані?</span>
+        <span>Вже маєте аккаунт?</span>
         <Link to="/login"> <button className="redirectButton">Вхід</button> </Link>
       </div>
 
