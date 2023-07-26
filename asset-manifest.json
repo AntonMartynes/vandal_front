@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/vandal_front/static/css/main.abd64e84.css",
+    "main.js": "/vandal_front/static/js/main.54277093.js",
+    "index.html": "/vandal_front/index.html",
+    "main.abd64e84.css.map": "/vandal_front/static/css/main.abd64e84.css.map",
+    "main.54277093.js.map": "/vandal_front/static/js/main.54277093.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.abd64e84.css",
+    "static/js/main.54277093.js"
+  ]
+}
